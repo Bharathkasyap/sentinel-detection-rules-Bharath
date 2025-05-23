@@ -1,0 +1,54 @@
+kind: Scheduled
+name: detect-smb-lateral-movement
+description: Detects possible lateral movement through SMB file shares using ADMIN$ and remote access patterns.
+severity: High
+enabled: true
+
+query: |
+  DeviceNetworkEvents
+  | where RemotePort == 445 and InitiatingProcessFileName in~ ("cmd.exe", "powershell.exe", "wmic.exe", "psexec.exe")
+  | project TimeGenerated, DeviceName, InitiatingProcessFileName, InitiatingProcessCommandLine, RemoteIP, RemotePort
+
+tactics:
+  - LateralMovement
+
+techniques:
+  - T1021.002: SMB/Windows Admin Shares
+
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: RemoteIP
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# SMB is used to connect to shared folders. Lateral movement using `psexec`, `wmic`, or `copy` over `ADMIN$` is common post-compromise behavior.
+#
+# 🔍 What Attackers Might Do:
+# - Copy and execute malware remotely
+# - Harvest credentials from peer systems
+# - Escalate privileges by jumping to domain controller
+#
+# 📂 Log Tables to Review:
+# - DeviceNetworkEvents (445 traffic from admin tools)
+# - DeviceProcessEvents (check what launched the traffic)
+# - SecurityEvent 4624 (logon to remote machine)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Validate if tool use (like psexec) is legitimate
+# 2. Trace command-line arguments for malicious scripts or DLLs
+# 3. Review if session led to service install or task creation
+#
+# 🛡️ Response Actions:
+# - Block IP-to-IP access on port 445 if unnecessary
+# - Restrict admin rights through segmentation
+# - Investigate remote machines targeted

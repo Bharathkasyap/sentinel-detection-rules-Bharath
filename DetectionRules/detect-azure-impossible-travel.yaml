@@ -1,0 +1,64 @@
+kind: Scheduled
+name: detect-azure-impossible-travel
+description: Detects Azure AD sign-ins from geographically distant locations in a short time period, indicating possible credential compromise.
+severity: High
+enabled: true
+
+query: |
+  SigninLogs
+  | project UserPrincipalName, IPAddress, Location, TimeGenerated
+  | order by UserPrincipalName, TimeGenerated asc
+  | serialize
+  | extend PrevSigninTime = prev(TimeGenerated), PrevIP = prev(IPAddress), PrevLocation = prev(Location)
+  | extend TimeDiff = datetime_diff('minute', TimeGenerated, PrevSigninTime)
+  | where UserPrincipalName == prev(UserPrincipalName) and TimeDiff < 60
+  | where Location != PrevLocation
+  | project TimeGenerated, UserPrincipalName, IPAddress, Location, PrevSigninTime, PrevIP, PrevLocation, TimeDiff
+
+tactics:
+  - InitialAccess
+
+techniques:
+  - T1078: Valid Accounts
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: UserPrincipalName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Impossible travel detections catch sign-ins from multiple countries within a short timeframe — something humans cannot physically do. It’s a red flag for account compromise or token/session hijack.
+#
+# 🔍 What Attackers Might Do:
+# - Use stolen tokens or passwords from phishing or stealer malware
+# - Authenticate from personal devices or bots in different countries
+# - Perform reconnaissance, download data, or send phishing internally
+#
+# 📂 Log Tables to Review:
+# - SigninLogs (location, IP, sign-in type)
+# - AADNonInteractiveUserSignInLogs (token refresh and background apps)
+# - DeviceLogonEvents (check if stolen creds were used internally)
+# - EmailEvents (mass download, mailbox rule changes)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Verify if login type was `Interactive` or `Token-based`
+# 2. Check user agent / device ID — does it change drastically?
+# 3. Was there a successful MFA prompt? Or bypassed?
+# 4. Trace login patterns before and after the detection
+#
+# 🛡️ Response Actions:
+# - Disable the affected account
+# - Invalidate sessions and refresh tokens
+# - Require password reset and enforce Conditional Access
+# - Alert user to verify recent activity
+# - Enable continuous location-based access controls in Azure

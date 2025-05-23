@@ -1,0 +1,54 @@
+kind: Scheduled
+name: detect-psexec-usage-across-network
+description: Detects use of PsExec for remote command execution, often seen during lateral movement or red team operations.
+severity: High
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where FileName =~ "psexec.exe" or ProcessCommandLine has "psexec"
+  | project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine
+
+tactics:
+  - LateralMovement
+
+techniques:
+  - T1569.002: System Services: Service Execution
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# PsExec is a common tool for executing commands on remote machines. Used by attackers, pentesters, and system admins.
+#
+# 🔍 What Attackers Might Do:
+# - Deploy ransomware across the domain
+# - Remotely install software/payloads
+# - Move laterally post-access
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (psexec.exe, process chains)
+# - DeviceNetworkEvents (connections to admin shares)
+# - DeviceFileEvents (remote payload write)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Confirm whether usage is approved/admin or malicious
+# 2. Check parent process and user session
+# 3. Correlate with service installation or user creation
+#
+# 🛡️ Response Actions:
+# - Alert SOC for manual triage
+# - Disable PsExec if not used legitimately
+# - Isolate endpoint and check for lateral access

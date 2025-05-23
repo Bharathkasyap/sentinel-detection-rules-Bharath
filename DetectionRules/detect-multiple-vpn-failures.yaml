@@ -1,0 +1,57 @@
+kind: Scheduled
+name: detect-multiple-vpn-failures
+description: Detects multiple failed VPN logon attempts from same user or IP — often a brute-force or sprayed credential attempt.
+severity: Medium
+enabled: true
+
+query: |
+  SigninLogs
+  | where AppDisplayName has "VPN"
+  | where ResultType != 0
+  | summarize FailCount = count() by UserPrincipalName, IPAddress, bin(TimeGenerated, 10m)
+  | where FailCount > 10
+  | project TimeGenerated, UserPrincipalName, IPAddress, FailCount
+
+tactics:
+  - InitialAccess
+
+techniques:
+  - T1078: Valid Accounts
+
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: IPAddress
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# VPN is often targeted in external access attacks. Brute force against VPN shows up as failed auth events on Entra ID/Azure SigninLogs or NPS logs.
+#
+# 🔍 What Attackers Might Do:
+# - Use sprayed passwords to log in
+# - Try multiple users from one IP (or vice versa)
+#
+# 📂 Log Tables to Review:
+# - SigninLogs (VPN app sign-in failures)
+# - AADNonInteractiveUserSignInLogs
+# - SecurityEvent (local RADIUS auth failures)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Check if failures come from known IP range
+# 2. Search if any eventual success follows the failures
+# 3. Look for use of those credentials elsewhere
+#
+# 🛡️ Response Actions:
+# - Block external IP if persistent
+# - Alert user and reset credentials
+# - Enable lockout policy on VPN endpoint
+# - Require MFA for all VPN-accessible accounts

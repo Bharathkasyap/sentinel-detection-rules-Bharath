@@ -1,0 +1,59 @@
+kind: Scheduled
+name: detect-dns-tunneling
+description: Detects long and frequent DNS queries, a strong sign of DNS tunneling used for covert data exfiltration or C2 communication.
+severity: High
+enabled: true
+
+query: |
+  DnsEvents
+  | where strlen(Name) > 50
+  | summarize Count = count() by Name, ClientIP, bin(TimeGenerated, 5m)
+  | where Count > 10
+  | project TimeGenerated, Name, ClientIP, Count
+
+tactics:
+  - CommandAndControl
+
+techniques:
+  - T1071.004: Application Layer Protocol: DNS
+
+entityMappings:
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: ClientIP
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# DNS tunneling tools (like Iodine, DNScat2) encode payloads into DNS queries to bypass firewalls and exfiltrate data.
+#
+# 🔍 What Attackers Might Do:
+# - Exfiltrate data using DNS packets
+# - Send commands to infected host via DNS
+# - Maintain low and stealthy C2 channels
+#
+# 📂 Log Tables to Review:
+# - DnsEvents (unusual frequency, length, patterns)
+# - DeviceNetworkEvents (DNS to rare domains)
+# - DeviceProcessEvents (dns.exe, powershell, python)
+# - Firewall/Proxy logs (confirm DNS payload leaves environment)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Identify domains with long subdomain chains or fast flux
+# 2. Check number of DNS requests per client per time unit
+# 3. Review content of queries — do they look encoded?
+# 4. Trace back to initiating process — was it browser or script?
+#
+# 🛡️ Response Actions:
+# - Block the suspicious domain at DNS resolver
+# - Use network inspection tools (like Zeek) to decode payloads
+# - Alert SOC to investigate client activity and isolate if needed
+# - Review DNS egress policies and segment internal DNS traffic

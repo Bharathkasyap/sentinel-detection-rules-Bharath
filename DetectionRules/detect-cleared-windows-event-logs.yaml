@@ -1,0 +1,53 @@
+kind: Scheduled
+name: detect-cleared-windows-event-logs
+description: Detects the clearing of Windows event logs, a classic attacker move to cover tracks post-compromise.
+severity: High
+enabled: true
+
+query: |
+  SecurityEvent
+  | where EventID == 1102
+  | project TimeGenerated, Computer, SubjectUserName
+
+tactics:
+  - DefenseEvasion
+
+techniques:
+  - T1070.001: Indicator Removal on Host: Clear Windows Event Logs
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: SubjectUserName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# EventID 1102 = “The audit log was cleared.” Almost always a red flag unless part of scheduled log rotation.
+#
+# 🔍 What Attackers Might Do:
+# - Clear logs after privilege escalation or data theft
+# - Use audit clearing to hide lateral movement and persistence
+#
+# 📂 Log Tables to Review:
+# - SecurityEvent 1102 (log cleared)
+# - Event 4688 (process creation)
+# - RegistryEvents (check persistence remnants)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Review who cleared the log and when
+# 2. Check if attack traces exist before clearing
+# 3. Audit full event log history for gaps
+#
+# 🛡️ Response Actions:
+# - Alert SOC and isolate the host
+# - Review logs from SIEM, Sysmon, or endpoint sensors
+# - Notify IR team and preserve memory/image

@@ -1,0 +1,58 @@
+kind: Scheduled
+name: detect-new-admin-user
+description: Detects when a new user is added to a privileged group such as Administrators or Domain Admins.
+severity: High
+enabled: true
+
+query: |
+  SecurityEvent
+  | where EventID in (4728, 4732, 4756)  // 4728 = local group, 4732 = domain group, 4756 = universal
+  | where TargetUserName !in ("Administrator", "admin")  // filter out default admin accounts
+  | project TimeGenerated, TargetUserName, GroupName, SubjectUserName
+
+tactics:
+  - PrivilegeEscalation
+
+techniques:
+  - T1078: Valid Accounts
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: TargetUserName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Attackers often create or escalate accounts after gaining access, especially following brute force or token theft.
+#
+# 🔍 What Attackers Might Do:
+# - Create new local or domain accounts
+# - Add accounts to `Administrators`, `Domain Admins`, or `Remote Desktop Users`
+# - Schedule tasks for persistence under the new account
+#
+# 📂 Log Tables to Review:
+# - SecurityEvent 4720 (new user), 4728/4732/4756 (added to group)
+# - DeviceProcessEvents (commands: net user, net localgroup)
+# - DeviceLogonEvents (login with new account)
+# - RegistryEvents (setup for persistence)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Check whether this action follows a brute force or phishing attack
+# 2. Trace who performed the action (SubjectUserName)
+# 3. Confirm if the account was used to login anywhere (DeviceLogonEvents)
+# 4. Audit scheduled tasks or services created by the account
+#
+# 🛡️ Response Actions:
+# - Immediately revoke new account access
+# - Reset all passwords changed after this event
+# - Review system GPO and admin group memberships
+# - Check if other machines were accessed using this identity

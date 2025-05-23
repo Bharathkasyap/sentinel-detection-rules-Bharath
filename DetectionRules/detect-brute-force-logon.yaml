@@ -1,0 +1,68 @@
+kind: Scheduled
+name: detect-brute-force-logon
+description: Detects a high number of failed logon attempts by a single user or host within a short time window, indicating a brute-force attack attempt.
+severity: Medium
+enabled: true
+
+query: |
+  SecurityEvent
+  | where EventID == 4625
+  | summarize FailedCount = count() by Account, bin(TimeGenerated, 5m)
+  | where FailedCount > 10
+  | project TimeGenerated, Account, FailedCount
+
+tactics:
+  - CredentialAccess
+
+techniques:
+  - T1110
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: Account
+
+triggerOperator: gt
+triggerThreshold: 10
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# Brute force attacks involve automated login attempts using common or leaked passwords.
+# Attackers often target services like RDP, SMB, VPN, or OWA.
+# If successful, the attack transitions into credential theft, lateral movement, or privilege escalation.
+#
+# 🔍 What Attackers Might Do Post-Detection:
+# - Logon success (EventID 4624) after failures
+# - Lateral movement via RDP, SMB, WinRM (T1021)
+# - Credential theft from LSASS (T1003)
+# - Data exfiltration from local systems (T1005)
+# - Use harvested credentials for privilege escalation (T1078)
+# - Abuse access to email (T1114)
+#
+# 📂 Log Tables to Review:
+# - SecurityEvent (4625 and 4624)
+# - DeviceLogonEvents (track lateral movement)
+# - SigninLogs (especially for cloud environments)
+# - DeviceProcessEvents (script execution post-login)
+# - DeviceFileEvents (file access/downloads)
+# - RegistryEvents (persistence setup)
+# - EmailEvents, OfficeActivity (suspicious mailbox activity)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Confirm if 4624 follows the 4625 burst
+# 2. Check where the successful account was used next (DeviceLogonEvents)
+# 3. Look for credential theft attempts (lsass, procdump, comsvcs)
+# 4. Explore lateral logins to other systems
+# 5. Monitor file and email access patterns
+#
+# 🛡️ Response Actions:
+# - Disable/suspend the account
+# - Reset password, enforce MFA
+# - Review GPO or RBAC for the user
+# - Audit login attempts across the domain
+# - Check endpoint health and isolation if needed

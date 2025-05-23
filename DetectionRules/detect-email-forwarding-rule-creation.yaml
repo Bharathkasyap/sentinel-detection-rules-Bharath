@@ -1,0 +1,54 @@
+kind: Scheduled
+name: detect-email-forwarding-rule-creation
+description: Detects creation of mailbox forwarding rules, commonly used for stealthy data exfiltration via Outlook/Exchange.
+severity: High
+enabled: true
+
+query: |
+  EmailEvents
+  | where Action == "New-InboxRule" or Action contains "ForwardTo"
+  | project TimeGenerated, AccountName, Action, Parameters
+
+tactics:
+  - Collection
+
+techniques:
+  - T1114: Email Collection
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Forwarding rules silently redirect internal or sensitive emails to external inboxes, often used in BEC (Business Email Compromise) attacks.
+#
+# 🔍 What Attackers Might Do:
+# - Forward finance, HR, or executive email to attacker-controlled domains
+# - Hide rule with names like “Fax” or “AdminOps”
+#
+# 📂 Log Tables to Review:
+# - EmailEvents (inbox rule creation/modification)
+# - OfficeActivity (PowerShell run via ExchangeOnline)
+# - SigninLogs (unusual login to mailbox)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Verify who created the rule and from where
+# 2. Check if multiple mailboxes have similar rules
+# 3. Pivot to browser sign-ins and MFA bypasses
+#
+# 🛡️ Response Actions:
+# - Remove rule and disable mailbox access
+# - Force sign-out and password reset
+# - Alert finance/HR for potential data exposure
+# - Restrict external forwarding org-wide

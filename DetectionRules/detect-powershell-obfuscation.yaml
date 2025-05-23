@@ -1,0 +1,59 @@
+kind: Scheduled
+name: detect-powershell-obfuscation
+description: Detects use of encoded or obfuscated PowerShell commands, a common evasion and execution technique.
+severity: High
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where FileName in~ ("powershell.exe", "pwsh.exe")
+  | where ProcessCommandLine has_any ("-EncodedCommand", "base64", "IEX", "FromBase64String")
+  | project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine
+
+tactics:
+  - Execution
+
+techniques:
+  - T1059.001: PowerShell
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# PowerShell is widely used for both administration and attack. Encoded or obfuscated commands help attackers evade detection.
+#
+# 🔍 What Attackers Might Do:
+# - Download and execute malware (Invoke-WebRequest, IEX)
+# - Disable security tools (e.g., Defender)
+# - Dump credentials (Mimikatz or LSASS memory scraping)
+# - Lateral movement scripts, reconnaissance
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (PowerShell process tracking)
+# - DeviceNetworkEvents (external payloads or beaconing)
+# - SecurityEvent 4688 (Command line auditing)
+# - RegistryEvents (startup persistence)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Decode suspicious base64 strings using online/base64 tools
+# 2. Check parent process → did Word or Excel invoke PowerShell?
+# 3. Correlate network logs for C2 or payload drops
+# 4. Pivot to other endpoints with similar encoded commands
+#
+# 🛡️ Response Actions:
+# - Kill suspicious processes
+# - Isolate affected endpoints
+# - Block outbound access from host to C2
+# - Search for persistence in `Run` keys or scheduled tasks

@@ -1,0 +1,55 @@
+kind: Scheduled
+name: detect-unusual-service-installation
+description: Detects service installations that may indicate persistence or privilege escalation attempts.
+severity: High
+enabled: true
+
+query: |
+  SecurityEvent
+  | where EventID == 7045
+  | where ServiceFileName has_any (".exe", ".bat", ".ps1")
+  | project TimeGenerated, ServiceName, ServiceFileName, StartType, AccountName
+
+tactics:
+  - Persistence
+
+techniques:
+  - T1543.003: Create or Modify System Process: Windows Service
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Attackers and red teams often register malicious services that execute payloads or scripts during startup or login.
+#
+# 🔍 What Attackers Might Do:
+# - Launch malware payload persistently
+# - Gain SYSTEM-level access
+# - Trigger malicious tasks without user interaction
+#
+# 📂 Log Tables to Review:
+# - SecurityEvent 7045 (service install)
+# - DeviceProcessEvents (if service installer was a script/tool)
+# - RegistryEvents (check autoruns or startup keys)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Check `ServiceFileName` for known bad paths (temp, public folders)
+# 2. Validate if service is in known whitelist
+# 3. Confirm signing/certificate and origin
+#
+# 🛡️ Response Actions:
+# - Disable and remove the service
+# - Review associated files and memory dumps
+# - Audit similar installations across fleet

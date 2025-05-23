@@ -1,0 +1,58 @@
+kind: Scheduled
+name: detect-msdt-follina-abuse
+description: Detects msdt.exe launched from Office apps (WINWORD/EXCEL), commonly seen in exploitation of CVE-2022-30190 (Follina).
+severity: High
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where FileName =~ "msdt.exe"
+  | where InitiatingProcessFileName has_any ("winword.exe", "excel.exe", "powerpnt.exe")
+  | project TimeGenerated, DeviceName, AccountName, FileName, InitiatingProcessFileName
+
+tactics:
+  - InitialAccess
+
+techniques:
+  - T1203: Exploitation for Client Execution
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Follina (CVE-2022-30190) uses specially crafted Office docs to invoke MSDT and execute arbitrary commands without macros.
+#
+# 🔍 What Attackers Might Do:
+# - Launch PowerShell silently (IEX / EncodedCommand)
+# - Install persistent malware (via task scheduler, registry)
+# - Pull payloads from attacker-hosted URLs
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (chain: WINWORD → msdt → PowerShell)
+# - EmailEvents (check attachment delivery)
+# - DeviceFileEvents (doc drop and execution)
+# - RegistryEvents (startup entries)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Detect initial msdt.exe launch by Office products
+# 2. Check next processes spawned (PowerShell, rundll32)
+# 3. Review network activity for suspicious outbound connections
+# 4. Look for evidence of persistence or scheduled task creation
+#
+# 🛡️ Response Actions:
+# - Block msdt.exe via GPO or EDR
+# - Apply latest Microsoft patches for CVE-2022-30190
+# - Hunt for similar doc executions across other users
+# - Alert users about suspicious Office documents

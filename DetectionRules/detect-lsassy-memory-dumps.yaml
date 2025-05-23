@@ -1,0 +1,58 @@
+kind: Scheduled
+name: detect-lsassy-memory-dumps
+description: Detects attempts to dump LSASS process memory using common tools like procdump or comsvcs.dll.
+severity: High
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where FileName in~ ("procdump.exe", "rundll32.exe")
+  | where ProcessCommandLine has_any ("lsass", "comsvcs.dll")
+  | project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine
+
+tactics:
+  - CredentialAccess
+
+techniques:
+  - T1003.001: OS Credential Dumping: LSASS Memory
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Dumping LSASS memory is a common technique for credential harvesting. This detection focuses on common binaries used to extract LSASS (e.g., procdump.exe, rundll32).
+#
+# 🔍 What Attackers Might Do:
+# - Use LSASS dump to extract clear-text passwords and hashes
+# - Use credentials for lateral movement
+# - Elevate privileges or impersonate sessions
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (look for dumping tools and lsass context)
+# - DeviceLogonEvents (track account reuse post-theft)
+# - DeviceNetworkEvents (C2 communication after data theft)
+# - SecurityEvent 4688 (process creation auditing)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Correlate dump attempt with recent admin logon or escalation
+# 2. Check if Mimikatz or related tools ran after this
+# 3. Trace where the account was reused across machines
+# 4. Look for outbound exfiltration attempts
+#
+# 🛡️ Response Actions:
+# - Isolate host
+# - Invalidate harvested credentials (password reset, token revocation)
+# - Search domain for reuse of compromised accounts
+# - Scan for additional persistence or C2 implants

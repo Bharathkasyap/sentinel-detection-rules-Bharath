@@ -1,0 +1,58 @@
+kind: Scheduled
+name: detect-scheduled-task-creation
+description: Detects scheduled task creation using schtasks.exe, often used for persistence by attackers.
+severity: Medium
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where FileName =~ "schtasks.exe"
+  | where ProcessCommandLine has_any ("create", "/create")
+  | project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine
+
+tactics:
+  - Persistence
+
+techniques:
+  - T1053.005: Scheduled Task/Job: Scheduled Task
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Scheduled tasks are often used by threat actors to maintain persistence or to schedule recurring command/script execution.
+#
+# 🔍 What Attackers Might Do:
+# - Set scheduled execution of PowerShell or batch scripts
+# - Trigger malware payload on reboot or interval
+# - Maintain long-term access without re-exploitation
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (confirm schtasks command origin)
+# - RegistryEvents (check for persistence keys)
+# - SecurityEvent 4698 (new task creation)
+# - DeviceFileEvents (check dropped payloads or scripts)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Analyze task name and frequency in command line
+# 2. Check what payload or script is being launched
+# 3. Identify parent process → was it spawned by malware?
+# 4. Look for similar tasks created on other endpoints
+#
+# 🛡️ Response Actions:
+# - Review and delete unauthorized tasks
+# - Disable schtasks.exe via AppLocker if not needed
+# - Audit startup folders and run keys
+# - Block execution of suspicious scripts used in the task

@@ -1,0 +1,63 @@
+kind: Scheduled
+name: detect-successful-logon-after-failures
+description: Detects when a user has multiple failed logons followed by a successful one within a short time, indicating a potential brute-force success.
+severity: High
+enabled: true
+
+query: |
+  let FailedLogons = SecurityEvent
+      | where EventID == 4625
+      | summarize FailCount = count(), FailTime = max(TimeGenerated) by Account;
+  let SuccessLogons = SecurityEvent
+      | where EventID == 4624
+      | summarize SuccessTime = min(TimeGenerated) by Account;
+  FailedLogons
+  | join kind=inner (SuccessLogons) on Account
+  | where SuccessTime between (FailTime .. FailTime + 10m)
+  | project Account, FailCount, FailTime, SuccessTime
+
+tactics:
+  - CredentialAccess
+
+techniques:
+  - T1110: Brute Force
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: Account
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Indicates a successful brute-force attempt. If an attacker guesses a correct password, they gain access immediately after multiple failures.
+#
+# 🔍 What Attackers Might Do:
+# - Log in and explore internal resources
+# - Drop payloads or backdoors
+# - Move laterally or escalate privileges
+#
+# 📂 Log Tables to Review:
+# - SecurityEvent (4625, 4624 timeline)
+# - DeviceLogonEvents (post-success activity)
+# - DeviceProcessEvents (executables run post-login)
+# - EmailEvents or FileEvents (sensitive data access)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Identify if same IP attempted multiple failures
+# 2. Trace what process/actions followed login
+# 3. Cross-check if same account is reused on other systems
+#
+# 🛡️ Response Actions:
+# - Lock the account
+# - Reset credentials
+# - Alert on other similar success-after-failure chains
+# - Hunt for dropped files or privilege escalation

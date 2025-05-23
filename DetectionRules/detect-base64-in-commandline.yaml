@@ -1,0 +1,57 @@
+kind: Scheduled
+name: detect-base64-in-commandline
+description: Detects use of base64-encoded strings in command-line arguments, a common sign of script obfuscation or stealthy execution.
+severity: Medium
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where ProcessCommandLine contains "base64" or ProcessCommandLine has_any ("FromBase64String", "-e", "-enc", "-EncodedCommand")
+  | project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine
+
+tactics:
+  - DefenseEvasion
+
+techniques:
+  - T1027: Obfuscated Files or Information
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Attackers use base64 to hide commands, script logic, or payload delivery inside PowerShell, CMD, or Python commands.
+#
+# 🔍 What Attackers Might Do:
+# - Execute encoded malware or reverse shells
+# - Bypass command-line detection
+# - Download and run remote code
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (review decoded payload)
+# - DeviceNetworkEvents (did it connect out?)
+# - RegistryEvents (is this part of a persistence mechanism?)
+# - FileEvents (any script created or dropped?)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Decode base64 and read full intent of the payload
+# 2. Check for network calls or download attempts
+# 3. Correlate with parent process — suspicious if launched by Office, WinRAR, browser
+# 4. Scan for similar encoded commands on other endpoints
+#
+# 🛡️ Response Actions:
+# - Decode and analyze payloads in isolated VM
+# - Kill process, isolate host if active C2
+# - Alert on common patterns of obfuscation in command-line
+# - Educate teams on legitimate vs. suspicious base64 usage

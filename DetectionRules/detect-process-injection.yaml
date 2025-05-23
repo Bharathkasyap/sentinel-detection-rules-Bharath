@@ -1,0 +1,57 @@
+kind: Scheduled
+name: detect-process-injection
+description: Detects suspicious memory injection into remote processes, often used for stealthy execution of malware.
+severity: High
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where ProcessCommandLine has_any ("VirtualAllocEx", "WriteProcessMemory", "CreateRemoteThread")
+  | where FileName in~ ("rundll32.exe", "svchost.exe", "explorer.exe", "notepad.exe")
+  | project TimeGenerated, DeviceName, AccountName, FileName, ProcessCommandLine
+
+tactics:
+  - DefenseEvasion
+
+techniques:
+  - T1055: Process Injection
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Process injection is used to hide malware execution within legitimate processes. Very common in modern malware and red team operations.
+#
+# 🔍 What Attackers Might Do:
+# - Execute payload via another benign process (e.g., explorer.exe)
+# - Hide persistence or malware execution
+# - Bypass security tools and logging
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (look for injection APIs)
+# - DeviceNetworkEvents (is this part of a C2 connection?)
+# - RegistryEvents (startup key for injector)
+# - SecurityEvent 4688 (process tree)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Confirm parent-child chain → who launched the injection?
+# 2. Decode or reverse the payload if memory dump is available
+# 3. Check memory usage spikes or sudden process spawning
+#
+# 🛡️ Response Actions:
+# - Dump memory of suspicious process for analysis
+# - Kill process or isolate endpoint
+# - Block repeated command-line patterns
+# - Notify EDR team for deeper memory analysis

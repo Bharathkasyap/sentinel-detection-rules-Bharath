@@ -1,0 +1,57 @@
+kind: Scheduled
+name: detect-command-line-recon
+description: Detects use of common command-line tools used by attackers during initial reconnaissance.
+severity: Medium
+enabled: true
+
+query: |
+  DeviceProcessEvents
+  | where ProcessCommandLine has_any ("whoami", "ipconfig", "net user", "net group", "systeminfo", "tasklist", "netstat")
+  | summarize CmdCount = count() by DeviceName, AccountName, bin(TimeGenerated, 10m)
+  | where CmdCount > 5
+  | project TimeGenerated, DeviceName, AccountName, CmdCount
+
+tactics:
+  - Discovery
+
+techniques:
+  - T1087: Account Discovery
+  - T1082: System Information Discovery
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+
+triggerOperator: gt
+triggerThreshold: 0
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# 📘 Context:
+# Attackers commonly execute commands like `whoami`, `ipconfig`, and `net user` to learn about system roles, accounts, and network info.
+#
+# 🔍 What Attackers Might Do:
+# - Determine user privileges
+# - Identify domain membership and roles
+# - Pivot to lateral movement targets
+#
+# 📂 Log Tables to Review:
+# - DeviceProcessEvents (grouped by command context)
+# - DeviceLogonEvents (verify who ran the recon)
+# - DeviceNetworkEvents (network reconnaissance via netstat)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Confirm the commands are not part of a script/tool
+# 2. Review user behavior pre/post recon
+# 3. Pivot to check lateral movement or SMB access after recon
+#
+# 🛡️ Response Actions:
+# - Alert security team to investigate session
+# - Isolate device if script/tool abuse is confirmed
+# - Harden account permissions and monitor further behavior

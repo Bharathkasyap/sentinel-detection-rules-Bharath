@@ -1,0 +1,70 @@
+kind: Scheduled
+name: detect-rdp-from-unusual-ip
+description: Flags RDP access from IPs or geolocations that have not been observed previously for a specific account.
+severity: High
+enabled: true
+
+query: |
+  SecurityEvent
+  | where EventID == 4624 and LogonType == 10
+  | summarize Count = count(), IPList = make_set(IpAddress) by Account, bin(TimeGenerated, 1d)
+  | where Count > 5
+  | join kind=inner (
+      Heartbeat
+      | summarize KnownIPs = make_set(RemoteIPCountry) by Computer
+    ) on $left.Account == $right.Computer
+  | where not(IPList has_any (KnownIPs))
+  | project TimeGenerated, Account, IPList
+
+tactics:
+  - LateralMovement
+
+techniques:
+  - T1021.001
+
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: Account
+
+triggerOperator: gt
+triggerThreshold: 5
+suppressionEnabled: false
+suppressionDuration: PT1H
+version: 1.0.0
+
+# ==========================
+# 🧠 Analyst Knowledge
+# ==========================
+# RDP is a popular protocol for remote administration but often abused post-compromise.
+# Sudden RDP from new countries/IPs may indicate credential theft or session hijacking.
+#
+# 🔍 What Attackers Might Do Post-RDP:
+# - Drop malware manually (Cobalt Strike, ransomware)
+# - Modify system policies or disable security tools
+# - Create new users or escalate privileges
+# - Dump memory (lsass)
+# - Move laterally to pivot hosts
+#
+# 📂 Log Tables to Review:
+# - SecurityEvent (4624, LogonType = 10)
+# - DeviceNetworkEvents (connections to C2 or staging hosts)
+# - DeviceProcessEvents (post-login activity)
+# - RegistryEvents (evidence of persistence)
+# - DeviceFileEvents (malware drops, tool usage)
+# - AADSignInLogs / SigninLogs (if hybrid identity)
+#
+# 🔁 Threat Hunting Flow:
+# 1. Confirm geolocation/IP is not part of known org traffic
+# 2. Identify unusual patterns in remote logins (e.g., RDP off-hours)
+# 3. Correlate with any recent password reset or phishing alerts
+# 4. Monitor for malicious tools (psexec, mimikatz, ntdsutil)
+# 5. Look for changes in local group membership
+#
+# 🛡️ Response Actions:
+# - Temporarily block inbound RDP
+# - Force password rotation for the account
+# - Alert on future RDP from this host/IP combo
+# - Enable Just-In-Time access for privileged RDP users
+# - Review GPO firewall settings and logon audit policy
