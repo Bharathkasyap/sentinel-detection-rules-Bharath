@@ -1,70 +1,94 @@
-# sentinel-detection-rules-Bharath
-Microsoft Sentinel Detection Rules
 # 🛰️ Microsoft Sentinel Detection Rules – Bharath Devulapalli (VBDev)
 
-A professional collection of **custom KQL-based analytic rules** designed for use with Microsoft Sentinel. These **detection rules** are built to detect real-world attack patterns, adversary behaviors, and malicious indicators by leveraging log telemetry across Windows, Azure, Defender, Office 365, and cloud environments.
+> “Detection is not just alerting, it’s storytelling — crafted in KQL.”  
+> — *Bharath Devulapalli (VBDev)*
 
-This project is curated by **Bharath Devulapalli (VBDev)** to showcase security automation, SOC readiness, and hands-on SIEM experience — ideal for blue teams, threat hunters, and detection engineers.
+A professionally curated collection of **KQL-based analytic rules** for Microsoft Sentinel built to detect adversary behaviors using real-world attack telemetry across Windows, Azure, Defender, M365, and hybrid environments.
 
----
-
-## 🚨 What are Detection Rules?
-
-Detection Rules in Microsoft Sentinel are **scheduled analytic queries** written in **Kusto Query Language (KQL)** that:
-- Continuously scan your security data
-- Detect suspicious or malicious behavior
-- Trigger alerts and playbooks
-- Map directly to **MITRE ATT&CK tactics and techniques**
-
-They are essential to build a **proactive threat detection engine**.
+🎯 Ideal for: SOC Analysts • Detection Engineers • Threat Hunters • Blue Team Interns  
+📁 Format: `.yaml` detection rules + embedded threat context  
+🛡️ ATT&CK-aligned • Resume-ready • GitHub-portable
 
 ---
 
-## 🧠 Why They Matter
+## 🚨 What are Sentinel Detection Rules?
 
-| Benefit                        | Description                                                                 |
-|-------------------------------|-----------------------------------------------------------------------------|
-| 🎯 Proactive Threat Detection | Move from reactive alerting to early detection of attacker behaviors       |
-| 🛡️ ATT&CK Framework Mapping   | Align detections with TTPs (Tactics, Techniques, Procedures)               |
-| 📈 SOC Efficiency              | Reduce alert fatigue with curated and contextual rules                     |
-| 🔄 Automation Ready           | Integrate detections with Playbooks (SOAR) to auto-contain or investigate  |
-| 📋 Resume Impact              | Shows real SIEM + KQL + Threat Intel experience to recruiters              |
+**Detection Rules** in Microsoft Sentinel are scheduled **Kusto Query Language (KQL)** analytics that:
+- Continuously scan log data from cloud & on-prem environments
+- Trigger real-time alerts based on suspicious behavior
+- Integrate with SOAR playbooks for automated response
+- Map directly to the **MITRE ATT&CK® Framework**
 
 ---
 
-## 🧰 How to Use These Rules
+## 🧠 Why This Repository Matters
 
-1. Go to Microsoft Sentinel → `Analytics` blade.
-2. Click `+ Create` → `Scheduled query rule`.
-3. Copy the KQL from any `.yaml` or `.kql` file in this repo.
-4. Paste it into the query window, set rule logic, tactics, severity, entities.
-5. Enable the rule and monitor it from `Incidents` view.
-
-> You can also use Azure Resource Manager (ARM) templates or `az sentinel` CLI for rule import/export.
-
----
-
-## 📘 Detection Rule Table
-
-| #  | Rule Name                        | MITRE Tactic         | Description                                     | Language | Detection Logic Link |
-|----|----------------------------------|-----------------------|-------------------------------------------------|----------|----------------------|
-| 1  | detect-brute-force-logon        | Credential Access     | Multiple failed login attempts                  | KQL      | [View Rule](./rules/detect-brute-force-logon.yaml) |
-| 2  | detect-rdp-from-unusual-ip      | Lateral Movement      | Suspicious RDP from foreign/rare location       | KQL      | [View Rule](./rules/detect-rdp-from-unusual-ip.yaml) |
-| 3  | detect-powershell-obfuscation   | Execution             | Base64 or encoded PowerShell usage              | KQL      | [View Rule](./rules/detect-powershell-obfuscation.yaml) |
-| 4  | detect-msdt-follina-abuse       | Initial Access        | Office launching MSDT (CVE-2022-30190)          | KQL      | [View Rule](./rules/detect-msdt-follina-abuse.yaml) |
-| 5  | detect-new-admin-user           | Privilege Escalation  | New user added to local or AD admin groups      | KQL      | [View Rule](./rules/detect-new-admin-user.yaml) |
-| 6  | detect-lsassy-memory-dumps      | Credential Access     | Potential LSASS dump via LOLBIN tools           | KQL      | [View Rule](./rules/detect-lsassy-memory-dumps.yaml) |
-| 7  | detect-scheduled-task-creation  | Persistence           | Abnormal task creation for persistence          | KQL      | [View Rule](./rules/detect-scheduled-task-creation.yaml) |
-| 8  | detect-base64-in-commandline    | Defense Evasion       | Obfuscated scripts or reverse shells            | KQL      | [View Rule](./rules/detect-base64-in-commandline.yaml) |
-| 9  | detect-dns-tunneling            | Command & Control     | Unusually long or frequent DNS requests         | KQL      | [View Rule](./rules/detect-dns-tunneling.yaml) |
-| 10 | detect-azure-impossible-travel  | Initial Access        | Azure AD sign-ins from distant countries        | KQL      | [View Rule](./rules/detect-azure-impossible-travel.yaml) |
+| 🌐 Benefit                    | 💡 Explanation                                                                 |
+|------------------------------|-------------------------------------------------------------------------------|
+| 🔍 Real Adversary Detection  | All rules mimic attacker behavior observed in real enterprise threats        |
+| 🧠 Analyst-Ready Context     | Embedded threat hunting tips, MITRE mapping, and response advice             |
+| 📦 GitHub Portability        | Clone and deploy instantly into any Sentinel instance                        |
+| 🎓 Resume Power              | Showcase hands-on SIEM, KQL, MITRE & SOC knowledge in interviews              |
+| 🤖 Automation-Enabled        | Easily pair with Sentinel Playbooks to auto-contain threats                  |
 
 ---
 
-## 🧠 Example Rule Logic (KQL)
+## 🧰 How to Use These `.yaml` Rules
+
+### 👨‍💻 Manual GUI Method
+
+1. Open **Microsoft Sentinel** → Go to **Analytics**  
+2. Click **+ Create** → **Scheduled query rule**  
+3. Copy the `query:` from any `.yaml` file  
+4. Paste it into the **Query box**  
+5. Fill in:
+   - Rule name
+   - Description
+   - Severity (`High`, `Medium`, etc.)
+   - MITRE tactic and technique
+   - Entity mappings (from `entityMappings`)
+6. Save → You're live!
+
+---
+
+### ⚙️ Optional: Automate via Azure CLI
+
+1. Convert `.yaml` to `.json` using online tools or script  
+2. Use `az sentinel alert-rule create` to deploy in bulk  
+3. See [Microsoft Docs](https://learn.microsoft.com/en-us/azure/sentinel/tutorial-detections-create) for ARM template usage
+
+---
+
+## 📋 Detection Rules Index
+
+| #  | Rule Name                          | MITRE Tactic         | Description                                        | Link |
+|----|------------------------------------|-----------------------|----------------------------------------------------|------|
+| 1  | detect-brute-force-logon           | Credential Access     | Multiple failed login attempts                     | [🔍](./rules/detect-brute-force-logon.yaml) |
+| 2  | detect-rdp-from-unusual-ip         | Lateral Movement      | RDP access from rare foreign IPs                   | [🔍](./rules/detect-rdp-from-unusual-ip.yaml) |
+| 3  | detect-powershell-obfuscation      | Execution             | Obfuscated/encoded PowerShell                      | [🔍](./rules/detect-powershell-obfuscation.yaml) |
+| 4  | detect-msdt-follina-abuse          | Initial Access        | MSDT exploit (CVE-2022-30190)                      | [🔍](./rules/detect-msdt-follina-abuse.yaml) |
+| 5  | detect-new-admin-user              | Privilege Escalation  | New user added to privileged group                 | [🔍](./rules/detect-new-admin-user.yaml) |
+| 6  | detect-lsassy-memory-dumps         | Credential Access     | Dumping LSASS via Procdump or Rundll32             | [🔍](./rules/detect-lsassy-memory-dumps.yaml) |
+| 7  | detect-scheduled-task-creation     | Persistence           | New scheduled tasks via schtasks                   | [🔍](./rules/detect-scheduled-task-creation.yaml) |
+| 8  | detect-base64-in-commandline       | Defense Evasion       | Base64 strings in command-line activity            | [🔍](./rules/detect-base64-in-commandline.yaml) |
+| 9  | detect-dns-tunneling               | C2 (Command & Control)| DNS tunneling via long frequent requests           | [🔍](./rules/detect-dns-tunneling.yaml) |
+| 10 | detect-azure-impossible-travel     | Initial Access        | Geo-impossible Azure sign-ins                      | [🔍](./rules/detect-azure-impossible-travel.yaml) |
+| 11 | detect-successful-logon-after-failures | Credential Access | Brute-force success after many 4625 failures       | [🔍](./rules/detect-successful-logon-after-failures.yaml) |
+| 12 | detect-password-spray              | Credential Access     | Spray attack from same IP across multiple users    | [🔍](./rules/detect-password-spray.yaml) |
+| 13 | detect-process-injection           | Defense Evasion       | VirtualAllocEx, WriteProcessMemory activity        | [🔍](./rules/detect-process-injection.yaml) |
+| 14 | detect-command-line-recon          | Discovery             | Recon commands: whoami, ipconfig, net user         | [🔍](./rules/detect-command-line-recon.yaml) |
+| 15 | detect-smb-lateral-movement        | Lateral Movement      | Remote file execution via SMB shares               | [🔍](./rules/detect-smb-lateral-movement.yaml) |
+| 16 | detect-unusual-service-installation| Persistence           | Malicious services registered                      | [🔍](./rules/detect-unusual-service-installation.yaml) |
+| 17 | detect-email-forwarding-rule-creation | Collection         | Auto-forward rules to external domains             | [🔍](./rules/detect-email-forwarding-rule-creation.yaml) |
+| 18 | detect-multiple-vpn-failures       | Initial Access        | Repeated VPN failures from one source              | [🔍](./rules/detect-multiple-vpn-failures.yaml) |
+| 19 | detect-psexec-usage-across-network | Lateral Movement      | PsExec execution across network                    | [🔍](./rules/detect-psexec-usage-across-network.yaml) |
+| 20 | detect-cleared-windows-event-logs  | Defense Evasion       | Event 1102 – audit log cleared                     | [🔍](./rules/detect-cleared-windows-event-logs.yaml) |
+
+---
+
+## 🔎 Example Rule Snippet
 
 ```kql
-// detect-brute-force-logon.kql
 SecurityEvent
 | where EventID == 4625
 | summarize FailedAttempts = count() by Account, bin(TimeGenerated, 5m)
