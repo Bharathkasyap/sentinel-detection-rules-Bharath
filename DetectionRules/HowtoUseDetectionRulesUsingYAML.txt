@@ -1,0 +1,108 @@
+✅ What is a YAML Detection Rule?
+A .yaml detection rule is a structured file that defines:
+
+The query to detect suspicious behavior (KQL)
+
+The MITRE tactic and technique
+
+The thresholds, triggers, and entity mappings
+
+Embedded threat intelligence for the analyst
+
+These files let you standardize, automate, and share threat detections across Sentinel environments and GitHub portfolios.
+
+✅ How to Use YAML Detection Rules in Microsoft Sentinel
+🔧 Option 1: Manually Create Detection Rule (Using GUI)
+If you're not importing via API or CLI:
+
+Go to Microsoft Sentinel
+
+Open the workspace where Sentinel is enabled.
+
+Click on ‘Analytics’
+
+This is where all rules are defined.
+
+Click ‘+ Create’ → ‘Scheduled query rule’
+
+Fill in Rule Basics:
+
+Name, description → use directly from the YAML.
+
+Severity: High, Medium, etc.
+
+Tactics: map from tactics: field (e.g., LateralMovement)
+
+Set Rule Query:
+
+Copy-paste the query: field from the YAML into the Query field.
+
+Set Rule Logic:
+
+Trigger: Use triggerOperator and triggerThreshold values.
+
+Frequency: Based on how fast you want alerts (default: 5-10 minutes).
+
+Set Entity Mapping:
+
+From entityMappings: section.
+
+Example: if entityType: Account and columnName: AccountName, map accordingly.
+
+Set Alert Enrichment or Automation (Optional)
+
+Click ‘Create’ — and your rule is live.
+
+🛠 Option 2: Use Azure CLI or REST API for Bulk Rule Upload
+If you want to automate rule deployment (especially from GitHub):
+
+Install Azure CLI
+And run:
+
+bash
+Copy
+Edit
+az login
+az extension add --name sentinel
+Convert .yaml to JSON
+Sentinel expects rule templates in JSON. You can convert with Python, VS Code, or online tools.
+
+Upload using ARM Template or REST API
+
+Azure Docs for reference:
+👉 https://learn.microsoft.com/en-us/azure/sentinel/tutorial-detections-create
+
+✅ Best Practice: Use GitHub as a Detection Rule Library
+Since you’ve written these with full context:
+
+Organize each .yaml file in a /rules/ folder
+
+Add a README.md with table and links like you already started
+
+When recruiters or analysts view your repo, they see:
+
+Real detections
+
+MITRE alignment
+
+Analyst notes and response plans
+
+🧠 Example: Mapping YAML to Sentinel GUI
+YAML Field	Sentinel UI Field
+name:	Rule name
+description:	Description
+query:	Rule query (KQL)
+severity:	Alert severity
+tactics:	MITRE ATT&CK Tactic (tag)
+techniques:	MITRE ATT&CK Technique (tag)
+triggerOperator	Trigger logic
+entityMappings:	Entity mapping (Account, IP, etc.)
+
+✅ Summary
+Use GUI for quick upload of detection rules
+
+Use .yaml in GitHub as portfolio or automation templates
+
+Use API or CLI for enterprise deployment at scale
+
+Would you like a screenshot-based tutorial, or a demo JSON file ready for CLI import next, Boss?
