@@ -55,7 +55,7 @@ A professionally curated collection of **KQL-based analytic rules** for Microsof
 
 1. Convert `.yaml` to `.json` using online tools or script  
 2. Use `az sentinel alert-rule create` to deploy in bulk  
-3. See [Microsoft Docs](https://learn.microsoft.com/en-us/azure/sentinel/tutorial-detections-create) for ARM template usage
+3. See [Microsoft Docs](https://learn.microsoft.com/en-us/training/paths/sc-200-utilize-kql-for-azure-sentinel/) & [Microsoft Docs](https://learn.microsoft.com/en-us/training/paths/sc-200-create-detections-perform-investigations-azure-sentinel/)for ARM template usage
 
 ---
 
@@ -63,26 +63,26 @@ A professionally curated collection of **KQL-based analytic rules** for Microsof
 
 | #  | Rule Name                          | MITRE Tactic         | Description                                        | Link |
 |----|------------------------------------|-----------------------|----------------------------------------------------|------|
-| 1  | detect-brute-force-logon           | Credential Access     | Multiple failed login attempts                     | [🔍](./rules/detect-brute-force-logon.yaml) |
-| 2  | detect-rdp-from-unusual-ip         | Lateral Movement      | RDP access from rare foreign IPs                   | [🔍](./rules/detect-rdp-from-unusual-ip.yaml) |
-| 3  | detect-powershell-obfuscation      | Execution             | Obfuscated/encoded PowerShell                      | [🔍](./rules/detect-powershell-obfuscation.yaml) |
-| 4  | detect-msdt-follina-abuse          | Initial Access        | MSDT exploit (CVE-2022-30190)                      | [🔍](./rules/detect-msdt-follina-abuse.yaml) |
-| 5  | detect-new-admin-user              | Privilege Escalation  | New user added to privileged group                 | [🔍](./rules/detect-new-admin-user.yaml) |
-| 6  | detect-lsassy-memory-dumps         | Credential Access     | Dumping LSASS via Procdump or Rundll32             | [🔍](./rules/detect-lsassy-memory-dumps.yaml) |
-| 7  | detect-scheduled-task-creation     | Persistence           | New scheduled tasks via schtasks                   | [🔍](./rules/detect-scheduled-task-creation.yaml) |
-| 8  | detect-base64-in-commandline       | Defense Evasion       | Base64 strings in command-line activity            | [🔍](./rules/detect-base64-in-commandline.yaml) |
-| 9  | detect-dns-tunneling               | C2 (Command & Control)| DNS tunneling via long frequent requests           | [🔍](./rules/detect-dns-tunneling.yaml) |
-| 10 | detect-azure-impossible-travel     | Initial Access        | Geo-impossible Azure sign-ins                      | [🔍](./rules/detect-azure-impossible-travel.yaml) |
-| 11 | detect-successful-logon-after-failures | Credential Access | Brute-force success after many 4625 failures       | [🔍](./rules/detect-successful-logon-after-failures.yaml) |
-| 12 | detect-password-spray              | Credential Access     | Spray attack from same IP across multiple users    | [🔍](./rules/detect-password-spray.yaml) |
-| 13 | detect-process-injection           | Defense Evasion       | VirtualAllocEx, WriteProcessMemory activity        | [🔍](./rules/detect-process-injection.yaml) |
-| 14 | detect-command-line-recon          | Discovery             | Recon commands: whoami, ipconfig, net user         | [🔍](./rules/detect-command-line-recon.yaml) |
-| 15 | detect-smb-lateral-movement        | Lateral Movement      | Remote file execution via SMB shares               | [🔍](./rules/detect-smb-lateral-movement.yaml) |
-| 16 | detect-unusual-service-installation| Persistence           | Malicious services registered                      | [🔍](./rules/detect-unusual-service-installation.yaml) |
-| 17 | detect-email-forwarding-rule-creation | Collection         | Auto-forward rules to external domains             | [🔍](./rules/detect-email-forwarding-rule-creation.yaml) |
-| 18 | detect-multiple-vpn-failures       | Initial Access        | Repeated VPN failures from one source              | [🔍](./rules/detect-multiple-vpn-failures.yaml) |
-| 19 | detect-psexec-usage-across-network | Lateral Movement      | PsExec execution across network                    | [🔍](./rules/detect-psexec-usage-across-network.yaml) |
-| 20 | detect-cleared-windows-event-logs  | Defense Evasion       | Event 1102 – audit log cleared                     | [🔍](./rules/detect-cleared-windows-event-logs.yaml) |
+| 1  | detect-brute-force-logon           | Credential Access     | Multiple failed login attempts                     | [🔍](./DetectionRules/detect-brute-force-logon.yaml) |
+| 2  | detect-rdp-from-unusual-ip         | Lateral Movement      | RDP access from rare foreign IPs                   | [🔍](./DetectionRules/detect-rdp-from-unusual-ip.yaml) |
+| 3  | detect-powershell-obfuscation      | Execution             | Obfuscated/encoded PowerShell                      | [🔍](./DetectionRules/detect-powershell-obfuscation.yaml) |
+| 4  | detect-msdt-follina-abuse          | Initial Access        | MSDT exploit (CVE-2022-30190)                      | [🔍](./DetectionRules/detect-msdt-follina-abuse.yaml) |
+| 5  | detect-new-admin-user              | Privilege Escalation  | New user added to privileged group                 | [🔍](./DetectionRules/detect-new-admin-user.yaml) |
+| 6  | detect-lsassy-memory-dumps         | Credential Access     | Dumping LSASS via Procdump or Rundll32             | [🔍](./DetectionRules/detect-lsassy-memory-dumps.yaml) |
+| 7  | detect-scheduled-task-creation     | Persistence           | New scheduled tasks via schtasks                   | [🔍](./DetectionRules/detect-scheduled-task-creation.yaml) |
+| 8  | detect-base64-in-commandline       | Defense Evasion       | Base64 strings in command-line activity            | [🔍](./DetectionRules/detect-base64-in-commandline.yaml) |
+| 9  | detect-dns-tunneling               | C2 (Command & Control)| DNS tunneling via long frequent requests           | [🔍](./DetectionRules/detect-dns-tunneling.yaml) |
+| 10 | detect-azure-impossible-travel     | Initial Access        | Geo-impossible Azure sign-ins                      | [🔍](./DetectionRules/detect-azure-impossible-travel.yaml) |
+| 11 | detect-successful-logon-after-failures | Credential Access | Brute-force success after many 4625 failures       | [🔍](./DetectionRules/detect-successful-logon-after-failures.yaml) |
+| 12 | detect-password-spray              | Credential Access     | Spray attack from same IP across multiple users    | [🔍](./DetectionRules/detect-password-spray.yaml) |
+| 13 | detect-process-injection           | Defense Evasion       | VirtualAllocEx, WriteProcessMemory activity        | [🔍](./DetectionRules/detect-process-injection.yaml) |
+| 14 | detect-command-line-recon          | Discovery             | Recon commands: whoami, ipconfig, net user         | [🔍](./DetectionRules/detect-command-line-recon.yaml) |
+| 15 | detect-smb-lateral-movement        | Lateral Movement      | Remote file execution via SMB shares               | [🔍](./DetectionRules/detect-smb-lateral-movement.yaml) |
+| 16 | detect-unusual-service-installation| Persistence           | Malicious services registered                      | [🔍](./DetectionRules/detect-unusual-service-installation.yaml) |
+| 17 | detect-email-forwarding-rule-creation | Collection         | Auto-forward rules to external domains             | [🔍](./DetectionRules/detect-email-forwarding-rule-creation.yaml) |
+| 18 | detect-multiple-vpn-failures       | Initial Access        | Repeated VPN failures from one source              | [🔍](./DetectionRules/detect-multiple-vpn-failures.yaml) |
+| 19 | detect-psexec-usage-across-network | Lateral Movement      | PsExec execution across network                    | [🔍](./DetectionRules/detect-psexec-usage-across-network.yaml) |
+| 20 | detect-cleared-windows-event-logs  | Defense Evasion       | Event 1102 – audit log cleared                     | [🔍](./DetectionRules/detect-cleared-windows-event-logs.yaml) |
 
 ---
 
