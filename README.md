@@ -55,7 +55,7 @@ A professionally curated collection of **KQL-based analytic rules** for Microsof
 
 1. Convert `.yaml` to `.json` using online tools or script  
 2. Use `az sentinel alert-rule create` to deploy in bulk  
-3. See [Microsoft Docs](https://learn.microsoft.com/en-us/training/paths/sc-200-utilize-kql-for-azure-sentinel/), [Microsoft Docs](https://learn.microsoft.com/en-us/azure/sentinel/create-analytics-rules?tabs=defender-portal) & [Microsoft Docs](https://learn.microsoft.com/en-us/training/paths/sc-200-create-detections-perform-investigations-azure-sentinel/) for ARM template usage
+3. See [Microsoft Docs:Create queries](https://learn.microsoft.com/en-us/training/paths/sc-200-utilize-kql-for-azure-sentinel/), [Microsoft Docs:Create a scheduled analytics rule](https://learn.microsoft.com/en-us/azure/sentinel/create-analytics-rules?tabs=defender-portal) & [Microsoft Docs:Create detections and perform investigations ](https://learn.microsoft.com/en-us/training/paths/sc-200-create-detections-perform-investigations-azure-sentinel/) for ARM template usage
 
 ---
 
